@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id        Int             @id @default(autoincrement())
+  name      String          @unique
+  pin       String?
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  records   CheckinRecord[]
+}
+
+model CheckinRecord {
+  id             Int      @id @default(autoincrement())
+  teacherId      Int
+  teacher        Teacher  @relation(fields: [teacherId], references: [id])
+  date           String // YYYY-MM-DD，Asia/Shanghai
+  time           String // HH:mm:ss
+  lat            Float?
+  lng            Float?
+  distanceM      Float?
+  locationStatus String // normal | out_of_range | unavailable
+  outOfWindow    Boolean  @default(false)
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([teacherId, date])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
