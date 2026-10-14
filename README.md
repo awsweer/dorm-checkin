@@ -37,12 +37,16 @@ npm run dev                 # http://localhost:3000
 
 ### 方案一：海外免费托管（推荐，零成本，自带 HTTPS）
 
-以 Vercel 为例（Render / Railway 类似）。注意 SQLite 是单文件数据库，**Serverless 平台文件系统重启即清空**，生产环境请任选其一：
+组合：**Vercel（托管）+ Neon（免费 Postgres 数据库）**，均免费、自带 HTTPS。
 
-- **简单做法**：改用 Vercel Postgres / Neon（免费档），把 `prisma/schema.prisma` 的 `provider` 改为 `postgresql`，`DATABASE_URL` 换成平台给的连接串即可，代码零改动。
-- **或**部署到支持持久磁盘的 Render / Railway / Fly.io，SQLite 原样可用。
+> SQLite 是单文件数据库，Vercel 这类 Serverless 平台重启即清空，所以线上必须用云数据库。项目已内置 `prisma/schema.postgres.prisma`，切换方法见下。
 
-步骤：代码推到 GitHub → Vercel 导入仓库 → 环境变量加 `ADMIN_PASSWORD` 和 `DATABASE_URL` → Deploy，得到 `https://xxx.vercel.app`。
+1. 代码推到 GitHub 仓库
+2. [Neon](https://neon.tech) 免费建库，复制连接串（形如 `postgresql://...neon.tech/...?sslmode=require`）
+3. 切换 schema：`cp prisma/schema.postgres.prisma prisma/schema.prisma`，提交推送
+4. Vercel 导入仓库，环境变量加 `DATABASE_URL`（Neon 连接串）和 `ADMIN_PASSWORD`，点 Deploy
+5. 构建时自动执行 `prisma db push` 建表；上线后进 `/admin` 在「教师」页手动添加教师即可（无需跑种子命令）
+6. 得到固定地址 `https://xxx.vercel.app/checkin`，用它生成二维码
 
 ### 方案二：国内轻量云服务器 + 备案域名（长期最稳定）
 
